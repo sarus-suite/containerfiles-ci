@@ -1,0 +1,23 @@
+FROM quay.io/ethcscs/ompi:5.0.7-ofi1.15-cuda12.8
+
+# Download and compile HDF5 with MPI
+ARG HDF5_VERSION=1.14.6
+RUN wget https://github.com/HDFGroup/hdf5/releases/download/hdf5_${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz \
+    && tar -xzf hdf5-${HDF5_VERSION}.tar.gz \
+    && cd hdf5-${HDF5_VERSION} \
+    && CC=mpicc ./configure --prefix=/usr --enable-parallel --enable-shared \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. && rm -rf hdf5-${HDF5_VERSION}*
+
+ARG sph_exa_version=0.93.1
+RUN git clone https://github.com/unibas-dmi-hpc/SPH-EXA.git \
+    && cd SPH-EXA \
+    && git checkout v${sph_exa_version} \
+    && CC=mpicc CXX=mpicxx cmake -DCSTONE_WITH_GPU_AWARE_MPI=ON -DCMAKE_INSTALL_PREFIX=/usr . \
+    && make -j \
+    && make install \
+    && cd .. \
+    && rm -rf SPH-EXA
+

@@ -1,0 +1,68 @@
+ARG ubuntu_version=24.04
+ARG cuda_version=12.8.1
+FROM docker.io/nvidia/cuda:${cuda_version}-cudnn-devel-ubuntu${ubuntu_version}
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+       apt-get install -y \
+        build-essential \
+        ca-certificates \
+        pkg-config \
+        automake \
+        autoconf \
+        libtool \
+        cmake \
+        gdb \
+        strace \
+        wget \
+        git \
+        bzip2 \
+        python3 \
+        rdma-core \
+        numactl \
+        libconfig-dev \
+        libuv1-dev \
+        libfuse-dev \
+        libfuse3-dev \
+        libyaml-dev \
+        libnl-3-dev \
+        libnuma-dev \
+        libsensors-dev \
+        libcurl4-openssl-dev \
+        libjson-c-dev \
+        libibverbs-dev \
+        --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG gdrcopy_version=2.4.4
+RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/gdrcopy.git \
+    && cd gdrcopy \
+    && export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} \
+    && make CC=gcc CUDA=$CUDA_PATH lib \
+    && make lib_install \
+    && cd ../ && rm -rf gdrcopy
+
+# Install libfabric
+ARG libfabric_version=1.15.0
+RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/libfabric.git \
+    && cd libfabric \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-efa \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf libfabric
+
+# Install UCX
+ARG UCX_VERSION=1.18.0
+RUN wget https://github.com/openucx/ucx/releases/download/v${UCX_VERSION}/ucx-${UCX_VERSION}.tar.gz \
+    && tar xzf ucx-${UCX_VERSION}.tar.gz \
+    && cd ucx-${UCX_VERSION} \
+    && mkdir build \
+    && cd build \
+    && ../configure --prefix=/usr --with-cuda=/usr/local/cuda --with-gdrcopy=/usr/local --enable-mt --enable-devel-headers \
+    && make -j$(nproc) \
+    && make install \
+    && cd ../.. \
+    && rm -rf ucx-${UCX_VERSION}.tar.gz ucx-${UCX_VERSION}
