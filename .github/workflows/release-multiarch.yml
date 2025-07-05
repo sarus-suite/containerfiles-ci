@@ -1,0 +1,87 @@
+name: Release MPICH Multi-Arch
+
+on:
+  push:
+    # V1 pipeline test: Only run when the MPICH Containerfile changes
+    paths:
+      - 'hpc/communication/mpich/Containerfile'
+
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        id: buildx
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push single-arch image
+        run: |
+          docker buildx build \
+            --builder "${{ steps.buildx.outputs.name }}" \
+            --platform linux/${{ matrix.arch }} \
+            --file hpc/communication/mpich/Containerfile \
+            --tag ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest-${{ matrix.arch }} \
+            --push \
+            .
+
+  manifest:
+    name: Create multi-arch manifest
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify single-arch images exist
+        run: |
+          set -euo pipefail
+
+          REPO=ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich
+          IMAGES=(
+            "${REPO}:latest-amd64"
+            "${REPO}:latest-arm64"
+          )
+
+          for img in "${IMAGES[@]}"; do
+            echo "Inspecting $img"
+            if ! docker buildx imagetools inspect "$img" > /dev/null; then
+              echo "::error file=manifest.yml::Image not found: $img"
+              exit 1
+            fi
+          done
+
+      - name: Create & push multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest \
+            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest-amd64 \
+            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest-arm64
+
