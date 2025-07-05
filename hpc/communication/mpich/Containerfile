@@ -16,4 +16,3 @@ RUN wget -q https://www.mpich.org/static/downloads/${MPI_VER}/mpich-${MPI_VER}.t
     && ldconfig \
     && cd .. \
     && rm -rf mpich-${MPI_VER}.tar.gz mpich-${MPI_VER}
-
