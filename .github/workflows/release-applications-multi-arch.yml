@@ -88,7 +88,6 @@ jobs:
       matrix:
         service: [pyfr-2.1, pynamic-openmpi, sphexa-0.93.1]
       fail-fast: false
-    if: needs.build.outputs['${{ matrix.service }}-changed'] == 'true'
     runs-on: ubuntu-latest
 
     steps:
