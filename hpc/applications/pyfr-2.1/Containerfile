@@ -40,5 +40,4 @@ RUN ldconfig /usr/local/cuda/targets/sbsa-linux/lib/stubs \
 ENV XDG_CACHE_HOME /tmp
 
 # Install PyFR
-RUN pip install pyfr==2.1
- 
+RUN pip install pyfr==2.1 

@@ -66,3 +66,4 @@ RUN git clone https://github.com/madeeks/pynamic.git \
     
 #    && python3 config_pynamic.py 495 1850 -e -u 215 1850 -n 100 -n 4 --with-python=python3 --with-mpi4py
 
+
