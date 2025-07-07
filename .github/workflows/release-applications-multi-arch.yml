@@ -1,0 +1,122 @@
+name: Release HPC Applications Multi-Arch
+
+on:
+  push:
+    # only trigger when one of the application Containerfiles changes
+    paths:
+      - 'hpc/applications/**/Containerfile'
+
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+  REPO: ${{ github.repository }}
+
+jobs:
+  # Build each arch/image
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # list out each service + arch + runner combo
+          - service: pyfr-2.1
+            arch: amd64
+            runner: ubuntu-latest
+          - service: pyfr-2.1
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - service: pynamic-openmpi
+            arch: amd64
+            runner: ubuntu-latest
+          - service: pynamic-openmpi
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - service: sphexa-0.93.1
+            arch: amd64
+            runner: ubuntu-latest
+          - service: sphexa-0.93.1
+            arch: arm64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
+      - name: Detect Containerfile changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            changed:
+              - 'hpc/applications/${{ matrix.service }}/Containerfile'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        id: buildx
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push single-arch image
+        if: steps.filter.outputs.changed == 'true'
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.REPO }}/${{ matrix.service }}"
+          docker buildx build \
+            --builder "${{ steps.buildx.outputs.name }}" \
+            --platform linux/${{ matrix.arch }} \
+            --file hpc/applications/${{ matrix.service }}/Containerfile \
+            --tag   "${IMAGE}:latest-${{ matrix.arch }}" \
+            --push \
+            .
+
+  # Gather each service’s two arches into one manifest
+  manifest:
+    needs: build
+    if: needs.build.outputs['${{ matrix.service }}-changed'] == 'true'
+    strategy:
+      matrix:
+        service: [pyfr-2.1, pynamic-openmpi, sphexa-0.93.1]
+      fail-fast: false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify single-arch images exist
+        run: |
+          set -euo pipefail
+          REPO="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.REPO }}/${{ matrix.service }}"
+          for ARCH in amd64 arm64; do
+            IMG="${REPO}:latest-${ARCH}"
+            echo "→ inspecting $IMG"
+            if ! docker buildx imagetools inspect "$IMG" > /dev/null; then
+              echo "::error file=manifest.yml::Image not found: $IMG"
+              exit 1
+            fi
+          done
+
+      - name: Create & push multi-arch manifest
+        run: |
+          REPO="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.REPO }}/${{ matrix.service }}"
+          docker buildx imagetools create \
+            --tag "${REPO}:latest" \
+            "${REPO}:latest-amd64" \
+            "${REPO}:latest-arm64"
+
