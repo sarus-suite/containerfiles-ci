@@ -84,11 +84,11 @@ jobs:
   # Gather each service’s two arches into one manifest
   manifest:
     needs: build
-    if: needs.build.outputs['${{ matrix.service }}-changed'] == 'true'
     strategy:
       matrix:
         service: [pyfr-2.1, pynamic-openmpi, sphexa-0.93.1]
       fail-fast: false
+    if: needs.build.outputs['${{ matrix.service }}-changed'] == 'true'
     runs-on: ubuntu-latest
 
     steps:
