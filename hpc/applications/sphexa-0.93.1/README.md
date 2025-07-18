@@ -1,6 +1,6 @@
 # SPH-EXA MPI/CUDA Container
 
-A minimal container image based on `quay.io/ethcscs/ompi:5.0.7-ofi1.15-cuda12.8` with:
+A minimal container image based on `quay.io/ethcscs/mpich:4.3.0-ofi1.15-cuda12.8` with:
 
 - Parallel HDF5 (MPI-enabled)  
 - SPH-EXA v0.93.1 with GPU-aware MPI  
