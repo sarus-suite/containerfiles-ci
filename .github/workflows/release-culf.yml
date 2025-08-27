@@ -3,11 +3,6 @@ name: Release of CUDA-UCX-LibFabric container Multi-arch
 on:
   push:
     branches: [main]
-    paths:
-      - 'hpc/communication/cuda-ucx-libfabric/Containerfile'
-      - '.github/workflows/release-cufl.yml'
-    workflow_dispatch:
-
 
 permissions:
   contents: write
