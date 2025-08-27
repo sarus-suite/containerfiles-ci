@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'hpc/communication/cuda-ucx-libfabric/Containerfile'
+      - '.github/workflows/release-cufl.yml'
+
 
 permissions:
   contents: write
