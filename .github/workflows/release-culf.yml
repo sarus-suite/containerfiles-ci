@@ -69,7 +69,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          REPO="${{ env.REGISTRY }}/${{ env.REPO }}/cuda-ucx-libfabric}"
+          REPO="${{ env.REGISTRY }}/${{ env.REPO }}/cuda-ucx-libfabric"
           IMAGES=(
             "${REPO}:latest-amd64"
             "${REPO}:latest-arm64"
@@ -85,7 +85,7 @@ jobs:
 
       - name: Create & push multi‑arch manifest
         run: |
-          REPO="${{ env.REGISTRY }}/${{ env.REPO }}/cuda-ucx-libfabric}"
+          REPO="${{ env.REGISTRY }}/${{ env.REPO }}/cuda-ucx-libfabric"
           docker buildx imagetools create \
             --tag "${REPO}:latest" \
             "${REPO}:latest-amd64" \
