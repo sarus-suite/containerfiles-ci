@@ -1,9 +1,9 @@
 name: Release of CUDA-UCX-LibFabric container Multi-arch
 
 on:
-push:
-  paths:
-    - 'hpc/communication/cuda-ucx-libfabric/Containerfile'
+  push:
+    paths:
+      - 'hpc/communication/cuda-ucx-libfabric/Containerfile'
 
 permissions:
   contents: write
