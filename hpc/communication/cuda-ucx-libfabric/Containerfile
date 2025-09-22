@@ -18,6 +18,7 @@ RUN apt-get update \
         git \
         bzip2 \
         python3 \
+        gfortran \
         rdma-core \
         numactl \
         libconfig-dev \
@@ -34,7 +35,7 @@ RUN apt-get update \
         --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ARG gdrcopy_version=2.4.4
+ARG gdrcopy_version=2.5.1
 RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/gdrcopy.git \
     && cd gdrcopy \
     && export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} \
@@ -43,7 +44,7 @@ RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/g
     && cd ../ && rm -rf gdrcopy
 
 # Install libfabric
-ARG libfabric_version=1.15.0
+ARG libfabric_version=1.22.0
 RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/libfabric.git \
     && cd libfabric \
     && ./autogen.sh \
@@ -55,7 +56,7 @@ RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/
     && rm -rf libfabric
 
 # Install UCX
-ARG UCX_VERSION=1.18.0
+ARG UCX_VERSION=1.19.0
 RUN wget https://github.com/openucx/ucx/releases/download/v${UCX_VERSION}/ucx-${UCX_VERSION}.tar.gz \
     && tar xzf ucx-${UCX_VERSION}.tar.gz \
     && cd ucx-${UCX_VERSION} \
