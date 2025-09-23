@@ -1,0 +1,36 @@
+FROM nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim make g++ git cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone and build cuda-samples
+WORKDIR /opt
+RUN git clone --depth=1 https://github.com/NVIDIA/cuda-samples.git
+
+# Increase compute runtime for matmult
+# Update iSizeMultiple limit from 10 to 200
+# Update nIter from 30 to 100
+RUN sed -i 's/iSizeMultiple = min(iSizeMultiple, 10);/iSizeMultiple = min(iSizeMultiple, 200);    printf("Using iSizeMultiple = %d\\n", iSizeMultiple);/' \
+       /opt/cuda-samples/Samples/4_CUDA_Libraries/matrixMulCUBLAS/matrixMulCUBLAS.cpp \
+    && sed -i 's/int nIter = 30;/int nIter = 1000;/' \
+       /opt/cuda-samples/Samples/4_CUDA_Libraries/matrixMulCUBLAS/matrixMulCUBLAS.cpp
+
+WORKDIR /opt/cuda-samples
+RUN mkdir -p build && cd build \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release \
+    && make matrixMulCUBLAS -j"$(nproc)"
+
+
+WORKDIR /opt
+RUN cp /opt/cuda-samples/build/Samples/4_CUDA_Libraries/matrixMulCUBLAS/matrixMulCUBLAS /opt/
+
+
+WORKDIR /opt
+COPY test.cu .
+RUN nvcc -O0 -o mps_overlap_test test.cu \
+  -gencode arch=compute_70,code=sm_70 \
+  -gencode arch=compute_80,code=sm_80 \
+  -gencode arch=compute_90,code=sm_90
+
