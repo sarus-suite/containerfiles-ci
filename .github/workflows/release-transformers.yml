@@ -57,13 +57,14 @@ jobs:
         if: steps.filter.outputs.changed == 'true'
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}/${{ matrix.service }}"
+          CTX="hpc/benchmarks/${{ matrix.service }}"
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
             --file hpc/benchmarks/${{ matrix.service }}/Containerfile \
             --tag   "${IMAGE}:latest-${{ matrix.arch }}" \
             --push \
-            .
+            "${CTX}"
 
   manifest:
     needs: build
