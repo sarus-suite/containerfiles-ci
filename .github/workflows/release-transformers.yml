@@ -59,6 +59,7 @@ jobs:
           IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}/${{ matrix.service }}"
           CTX="hpc/benchmarks/${{ matrix.service }}"
           docker buildx build \
+            --no-cache \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
             --file hpc/benchmarks/${{ matrix.service }}/Containerfile \
