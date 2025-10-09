@@ -1,0 +1,16 @@
+FROM nvcr.io/nvidia/pytorch:24.01-py3
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update
+RUN pip install --upgrade pip
+RUN pip install "transformers>=4.44.0" "tokenizers>=0.20.0" "huggingface_hub>=0.25.0" "accelerate>=1.0.0"
+
+ENV TORCH_CUDA_ARCH_LIST="9.0"
+ENV CMAKE_ARGS="-DCMAKE_CUDA_FLAGS=-DCUDA_NO_BFLOAT16"
+RUN pip install -v --no-build-isolation --no-deps git+https://github.com/rubber-duck-debug/xielu
+
+COPY benchmark_infer.py .
+
+ENV HUGGINGFACE_HUB_CACHE=/opt/hf/hub
+ENV TRANSFORMERS_CACHE=/opt/hf/transformers
+
