@@ -13,4 +13,3 @@ COPY benchmark_infer.py .
 
 ENV HUGGINGFACE_HUB_CACHE=/opt/hf/hub
 ENV TRANSFORMERS_CACHE=/opt/hf/transformers
-
