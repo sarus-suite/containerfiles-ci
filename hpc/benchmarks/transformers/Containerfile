@@ -1,40 +1,41 @@
-# ──────────────────────────────────────────────────────────────────────
-# Base. CUDA + PyTorch prebuilt
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# INPUT 1: NVIDIA base (CUDA + PyTorch prebuilt)
+# ──────────────────────────────────────────────────────────────────────────────
 FROM nvcr.io/nvidia/pytorch:24.01-py3
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 
-# ──────────────────────────────────────────────────────────────────────
-# Curated libraries
-# ──────────────────────────────────────────────────────────────────────
-# Upgrade pip first (separate layer for clarity)
+# ──────────────────────────────────────────────────────────────────────────────
+# INPUT 2: Curated, layered libraries (Python)
+# ──────────────────────────────────────────────────────────────────────────────
 RUN pip install --upgrade pip
 
-# Specialized libraries
+# Installing (pinned minimums):
+# - transformers        — HF models & pipelines
+# - tokenizers          — Fast Rust tokenizers
+# - huggingface_hub     — Hub client
+# - accelerate          — Multi-GPU / distributed utils
 RUN pip install --no-cache-dir \
-    "transformers>=4.44.0" \        # HuggingFace models and tools
-    "tokenizers>=0.20.0" \          # Fast tokenizers
-    "huggingface_hub>=0.25.0" \     # Model hub client
-    "accelerate>=1.0.0"             # Multi-GPU / distributed utilities
+    transformers>=4.44.0 \
+    tokenizers>=0.20.0 \
+    huggingface_hub>=0.25.0 \
+    accelerate>=1.0.0
 
-
-# ──────────────────────────────────────────────────────────────────────
-# User contribution example ( code / libs / build flags)
-# ──────────────────────────────────────────────────────────────────────
-# CUDA arch & build flags
+# CUDA arch & build flags (bfloat16 disabled for this toolchain)
 ENV TORCH_CUDA_ARCH_LIST="9.0"
 ENV CMAKE_ARGS="-DCMAKE_CUDA_FLAGS=-DCUDA_NO_BFLOAT16"
-# User project example
+
+# ──────────────────────────────────────────────────────────────────────────────
+# INPUT 3: User contribution (your code / libs)
+# ──────────────────────────────────────────────────────────────────────────────
 RUN pip install -v --no-build-isolation --no-deps \
     git+https://github.com/rubber-duck-debug/xielu
 
-# User benchmark script
 COPY benchmark_infer.py .
 
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
 # Caching for Hugging Face assets
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
 ENV HUGGINGFACE_HUB_CACHE=/opt/hf/hub
 ENV TRANSFORMERS_CACHE=/opt/hf/transformers
