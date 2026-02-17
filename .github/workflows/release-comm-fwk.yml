@@ -85,8 +85,9 @@ jobs:
 
       - name: Create & push multi‑arch manifest
         run: |
+          apt-get update && apt-get install -y --no-install-recommends skopeo jq
           REPO="${{ env.REGISTRY }}/${{ env.REPO }}/comm-fwk"
-          TAG=$(docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.version" }}' "${REPO}:build-arm64")
+          TAG=$(skopeo inspect --config docker://${REPO}:build-amd64 | jq '.config.Labels["org.opencontainers.image.version"]' | tr -d '"')
           docker buildx imagetools create \
             --tag "${REPO}:${TAG}" \
             "${REPO}:build-amd64" \
