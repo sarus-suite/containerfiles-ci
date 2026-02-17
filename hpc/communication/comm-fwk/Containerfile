@@ -58,18 +58,6 @@ RUN git clone --branch v${ucx_version} --depth 1 https://github.com/openucx/ucx 
     && cd ../.. \
     && rm -rf ucx
 
-# Install UCC
-ARG ucc_version=1.6.0
-RUN git clone --branch v${ucc_version} --depth 1 https://github.com/openucx/ucc \
-    && cd ucc \
-    && ./autogen.sh \
-    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --with-ucx --with-nccl \
-    && make -j$(nproc) \
-    && make install \
-    && ldconfig \
-    && cd ../.. \
-    && rm -rf ucc
-
 ARG cuda_version
 LABEL org.opencontainers.image.ref.name="comm-fwk"
-LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}-ucc${ucc_version}-cuda${cuda_version}"
+LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}-cuda${cuda_version}"
