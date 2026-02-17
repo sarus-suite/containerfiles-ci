@@ -1,4 +1,4 @@
-FROM quay.io/ethcscs/mpich:4.3.0-ofi1.15-cuda12.8
+FROM quay.io/ethcscs/mpich:4.3.1-ofi1.22-cuda12.8
 
 # Download and compile HDF5 with MPI
 ARG HDF5_VERSION=1.14.6
