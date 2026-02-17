@@ -1,6 +1,6 @@
 # OpenMPI based on Comm Stack CUDA Container
 
-A minimal container image based on `quay.io/ethcscs/comm-fwk:ofi1.15-ucx1.18-cuda12.8` with:
+A minimal container image based on `ghcr.io/sarus-suite/containerfiles-ci/comm-fwk:ofi1.22.0-ucx1.20.0-cuda12.8.1` with:
 
 - OpenMPI 5.0.9 built against libfabric (OFI) and UCX  
 - OSHMEM support  
@@ -12,5 +12,5 @@ A minimal container image based on `quay.io/ethcscs/comm-fwk:ofi1.15-ucx1.18-cud
 ~~~
 podman build \
   --build-arg OMPI_VER=5.0.9 \
-  -t openmpi-comm-fwk-cuda .
+  -t openmpi .
 ~~~
