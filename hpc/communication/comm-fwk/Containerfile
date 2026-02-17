@@ -72,5 +72,6 @@ RUN git clone --branch v${ucc_version} --depth 1 https://github.com/openucx/ucc 
     && cd ../.. \
     && rm -rf ucc
 
+ARG cuda_version
 LABEL org.opencontainers.image.ref.name="comm-fwk"
 LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}-ucc${ucc_version}-cuda${cuda_version}"
