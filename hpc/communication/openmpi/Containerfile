@@ -1,6 +1,6 @@
-FROM quay.io/ethcscs/comm-fwk:ofi1.15-ucx1.18-cuda12.8
+FROM ghcr.io/sarus-suite/containerfiles-ci/comm-fwk:ofi1.22.0-ucx1.20.0-cuda12.8.1
 
-ARG OMPI_VER=5.0.7
+ARG OMPI_VER=5.0.9
 RUN wget -q https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_VER}.tar.gz \
     && tar xf openmpi-${OMPI_VER}.tar.gz \
     && cd openmpi-${OMPI_VER} \
@@ -11,3 +11,6 @@ RUN wget -q https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_V
     && ldconfig \
     && cd .. \
     && rm -rf openmpi-${OMPI_VER}.tar.gz openmpi-${OMPI_VER}
+
+LABEL org.opencontainers.image.ref.name="ompi"
+LABEL org.opencontainers.image.version="${OMPI_VER}-ofi1.22-cuda12.8.1"
