@@ -1,8 +1,9 @@
-name: Release of comm-fwk container Multi-arch
+name: Release of comm-fwk container multi-arch
 
 on:
   push:
-    branches: [pipelines_update]
+    paths:
+      - 'hpc/communication/comm-fwk/Containerfile'
 
 permissions:
   contents: write
@@ -11,7 +12,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  REPO: ${{ github.repository }}
+  REPO: ghcr.io/${{ github.repository }}/comm-fwk
 
 
 jobs:
@@ -40,20 +41,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push single‑arch image
+      - name: Build & push single-arch image
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}/comm-fwk"
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
             --file hpc/communication/comm-fwk/Containerfile \
-            --tag   "${IMAGE}:build-${{ matrix.arch }}" \
+            --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
 
 # Multi-arch manifest that references both images
   manifest:
-    name: Create multi‑arch manifest
+    name: Create multi-arch manifest
     needs: build
     runs-on: ubuntu-latest
 
@@ -65,14 +65,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify single‑arch images exist
+      - name: Verify single-arch images exist
         run: |
           set -euo pipefail
 
-          REPO="${{ env.REGISTRY }}/${{ env.REPO }}/comm-fwk"
           IMAGES=(
-            "${REPO}:build-amd64"
-            "${REPO}:build-arm64"
+            "${{ env.REPO }}:build-amd64"
+            "${{ env.REPO }}:build-arm64"
           )
 
           for img in "${IMAGES[@]}"; do
@@ -83,13 +82,12 @@ jobs:
             fi
           done
 
-      - name: Create & push multi‑arch manifest
+      - name: Create & push multi-arch manifest
         run: |
           apt-get update && apt-get install -y --no-install-recommends skopeo jq
-          REPO="${{ env.REGISTRY }}/${{ env.REPO }}/comm-fwk"
-          TAG=$(skopeo inspect --config docker://${REPO}:build-amd64 | jq '.config.Labels["org.opencontainers.image.version"]' | tr -d '"')
+          TAG=$(skopeo inspect --config docker://${{ env.REPO }}:build-amd64 | jq '.config.Labels["org.opencontainers.image.version"]' | tr -d '"')
           docker buildx imagetools create \
-            --tag "${REPO}:${TAG}" \
-            "${REPO}:build-amd64" \
-            "${REPO}:build-arm64"
+            --tag "${{ env.REPO }}:${TAG}" \
+            "${{ env.REPO }}:build-amd64" \
+            "${{ env.REPO }}:build-arm64"
 
