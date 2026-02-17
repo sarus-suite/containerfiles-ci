@@ -50,9 +50,8 @@ RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/
 ARG ucx_version=1.20.0
 RUN git clone --branch v${ucx_version} --depth 1 https://github.com/openucx/ucx \
     && cd ucx \
-    && mkdir build \
-    && cd build \
-    && ../configure --prefix=/usr --with-cuda=/usr/local/cuda --with-gdrcopy=/usr/local --enable-mt --enable-devel-headers \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --with-gdrcopy=/usr/local --enable-mt --enable-devel-headers \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
@@ -60,12 +59,11 @@ RUN git clone --branch v${ucx_version} --depth 1 https://github.com/openucx/ucx 
     && rm -rf ucx
 
 # Install UCC
-ARG ucc_version=1.20.0
+ARG ucc_version=1.6.0
 RUN git clone --branch v${ucc_version} --depth 1 https://github.com/openucx/ucc \
     && cd ucc \
-    && mkdir build \
-    && cd build \
-    && ../configure --prefix=/usr --with-cuda=/usr/local/cuda --with-ucx --with-nccl \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --with-ucx --with-nccl \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
