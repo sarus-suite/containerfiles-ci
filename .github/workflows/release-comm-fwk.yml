@@ -86,7 +86,7 @@ jobs:
       - name: Create & push multi‑arch manifest
         run: |
           REPO="${{ env.REGISTRY }}/${{ env.REPO }}/comm-fwk"
-          TAG=$(docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.version" }}'' "${REPO}:build-arm64")
+          TAG=$(docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.version" }}' "${REPO}:build-arm64")
           docker buildx imagetools create \
             --tag "${REPO}:${TAG}" \
             "${REPO}:build-amd64" \
