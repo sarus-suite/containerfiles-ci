@@ -3,7 +3,7 @@ name: Release of NCCL Tests container multi-arch
 on:
   push:
     paths:
-      - 'hpc/communication/benchmarks/nccl-tests/Containerfile'
+      - 'hpc/benchmarks/nccl-tests/Containerfile'
   workflow_dispatch:
 
 permissions:

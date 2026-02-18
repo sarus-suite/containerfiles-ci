@@ -9,5 +9,4 @@ RUN wget -q -O nccl-tests-${nccl_tests_version}.tar.gz https://github.com/NVIDIA
     && rm -rf nccl-tests-${nccl_tests_version}.tar.gz
 
 LABEL org.opencontainers.image.ref.name="nccl-tests"
-
 LABEL org.opencontainers.image.version="${nccl_tests_version}-ompi5.0.9-ofi1.22-cuda12.8.1"
