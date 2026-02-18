@@ -48,6 +48,7 @@ jobs:
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
             --file hpc/benchmarks/nccl-tests/Containerfile \
+            --cache-from type=registry,ref=${{ env.REPO }} \
             --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
@@ -90,15 +91,3 @@ jobs:
             --tag "${{ env.REPO }}:${TAG}" \
             "${{ env.REPO }}:build-amd64" \
             "${{ env.REPO }}:build-arm64"
-
-      - name: Log in to GHCR with Podman
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup temporary single-arch images
-        run: |
-          skopeo delete docker://"${{ env.REPO }}:build-amd64"
-          skopeo delete docker://"${{ env.REPO }}:build-arm64"
