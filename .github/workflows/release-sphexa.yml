@@ -1,4 +1,4 @@
-name: Release of NCCL Tests container multi-arch
+name: Release of SPH-EXA container multi-arch
 
 on:
   push:
@@ -90,15 +90,3 @@ jobs:
             --tag "${{ env.REPO }}:${TAG}" \
             "${{ env.REPO }}:build-amd64" \
             "${{ env.REPO }}:build-arm64"
-
-      - name: Log in to GHCR with Podman
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup temporary single-arch images
-        run: |
-          skopeo delete docker://"${{ env.REPO }}:build-amd64"
-          skopeo delete docker://"${{ env.REPO }}:build-arm64"

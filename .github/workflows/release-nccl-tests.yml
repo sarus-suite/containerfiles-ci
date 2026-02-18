@@ -48,7 +48,6 @@ jobs:
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
             --file hpc/benchmarks/nccl-tests/Containerfile \
-            --cache-from type=registry,ref=${{ env.REPO }} \
             --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
