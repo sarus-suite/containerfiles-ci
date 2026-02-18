@@ -1,6 +1,6 @@
 FROM ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.9-ofi1.22-cuda12.8.1
 
-ARG omb_version=7.5
+ARG omb_version=7.5.2
 RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-${omb_version}.tar.gz \
     && tar xf osu-micro-benchmarks-${omb_version}.tar.gz \
     && cd osu-micro-benchmarks-${omb_version} \
