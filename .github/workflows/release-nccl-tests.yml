@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'hpc/communication/benchmarks/nccl-tests/Containerfile'
+  workflow_dispatch:
 
 permissions:
   contents: write
