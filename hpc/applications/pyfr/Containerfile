@@ -32,8 +32,10 @@ RUN git clone https://github.com/libxsmm/libxsmm.git \
 ENV PYFR_XSMM_LIBRARY_PATH=/libxsmm/lib/libxsmm.so
 
 # Install h5py with MPI
-RUN ldconfig /usr/local/cuda/targets/sbsa-linux/lib/stubs \
-    && HDF5_MPI="ON" CC=mpicc pip install --no-cache-dir --no-binary=h5py h5py \
+RUN ldconfig /usr/local/cuda/targets/*/lib/stubs \
+    && HDF5_MPI="ON" CC=mpicc pip install --no-cache-dir --no-binary=h5py \
+       h5py==3.14.0 \
+       mpi4py==4.1.0 \
     && ldconfig
 
 # Set base directory for pyCUDA cache
