@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y   \
         --no-install-recommends     \
   && rm -rf /var/lib/apt/lists/*    \
   && rm -rf /usr/lib/python3.12/EXTERNALLY-MANAGED
+
+RUN python3 -m pip install --no-cache-dir -U setuptools
     
 # Download and compile HDF5 with MPI
 ARG HDF5_VERSION=1.14.6
@@ -31,11 +33,16 @@ RUN git clone https://github.com/libxsmm/libxsmm.git \
 
 ENV PYFR_XSMM_LIBRARY_PATH=/libxsmm/lib/libxsmm.so
 
+# Install mpi4py and numpy with fixed versions
+RUN ldconfig /usr/local/cuda/targets/*/lib/stubs \
+    && CC=mpicc pip install --no-cache-dir \
+       mpi4py==4.1.0 numpy==2.3.1 cython pkgconfig \
+    && ldconfig
+
 # Install h5py with MPI
 RUN ldconfig /usr/local/cuda/targets/*/lib/stubs \
-    && HDF5_MPI="ON" CC=mpicc pip install --no-cache-dir --no-binary=h5py \
-       h5py==3.14.0 \
-       mpi4py==4.1.0 \
+    && HDF5_MPI="ON" CC=mpicc pip install --no-cache-dir --no-binary=h5py --no-build-isolation \
+       h5py==3.15.1 \
     && ldconfig
 
 # Set base directory for pyCUDA cache
