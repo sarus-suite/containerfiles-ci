@@ -10,6 +10,9 @@ The image also sets `/sphexa` as its initial working directory, where useful ass
 - A bash wrapper script to perform appropriate CPU/memory NUMA bindings for ranks in Slurm-managed nodes with 4 NVIDIA GPUs. Usage: `./wrapper.sh sphexa-cuda [...]`
 
 ## Building
+
+**Note: the build step for HDF5 uses autotools, and therefore does not support HDF5 >=2.0.0**
+
 ~~~
 podman build \
   --build-arg HDF5_VERSION=1.14.6 \
