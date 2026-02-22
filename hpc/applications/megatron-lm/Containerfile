@@ -1,0 +1,14 @@
+ARG ngc_pytorch_version=25.11
+FROM nvcr.io/nvidia/pytorch:${ngc_pytorch_version}-py3
+
+ENV PIP_CONSTRAINT=
+
+ARG megatron_core_version=0.15.2
+RUN pip install "setuptools<80.0.0,>=77.0.0" "packaging>=24.2" \
+    && pip install --no-build-isolation "megatron-core[mlm,dev]==${megatron_core_version}"
+
+RUN git clone --branch core_v${megatron_core_version} --depth 1 https://github.com/NVIDIA/Megatron-LM.git
+
+ARG ngc_pytorch_version
+LABEL org.opencontainers.image.ref.name="megatron-lm"
+LABEL org.opencontainers.image.version="${megatron_core_version}-pt${ngc_pytorch_version}"
