@@ -25,7 +25,7 @@ WORKDIR /sphexa
 
 COPY ./wrapper.sh /sphexa/wrapper.sh
 
-RUN wget -o /sphexa/50c.h5 https://zenodo.org/records/8369645/files/50c.h5?download=1 \
+RUN wget -O /sphexa/50c.h5 https://zenodo.org/records/8369645/files/50c.h5?download=1 \
     && chmod a+x /sphexa/wrapper.sh
 
 LABEL org.opencontainers.image.ref.name="sphexa"
