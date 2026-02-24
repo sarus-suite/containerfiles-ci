@@ -25,6 +25,32 @@ RUN wget -q https://github.com/HDFGroup/hdf5/releases/download/hdf5_${HDF5_VERSI
     && ldconfig \
     && cd .. && rm -rf hdf5-${HDF5_VERSION}*
 
+# Build GKlib as dependency for METIS
+RUN git clone https://github.com/KarypisLab/GKlib.git \
+    && cd GKlib \
+    && git checkout e2856c2f595b153ca1ce9258c5301dbabc4f39f5 \
+    && make config shared=1 cc=gcc prefix=/usr \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf GKlib
+
+# Install METIS for mesh partitioning
+# Build METIS from source because PyFR 2.1 requires METIS>=5.2 and Ubuntu
+# official packages provide 5.1.x. Build from a specific commit because
+# tag 5.2.1 does not include a fix for dynamic linking GKlib, causing errors
+# when PyFR tries to use METIS
+RUN git clone https://github.com/KarypisLab/METIS.git \
+    && cd METIS \
+    && git checkout dfded64f24664caa8809cacf416d378112e8867f \
+    && make config shared=1 cc=gcc prefix=/usr \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf METIS
+
 # Install SCOTCH for mesh partitioning
 RUN git clone --depth 1 --branch v7.0.11 https://gitlab.inria.fr/scotch/scotch.git \
     && cd scotch \
@@ -70,8 +96,7 @@ ARG pyfr_version=2.1
 RUN pip install pyfr==${pyfr_version}
 
 # Fetch small test cases and prepare the 3D Taylor-Green vortex case,
-# creating also a mesh for 2-rank execution and an ini file with shorter
-# simulation length and no solution output (save time beyond sim duration)
+# creating also a mesh for 2-rank execution
 RUN git clone https://github.com/PyFR/PyFR-Test-Cases.git /pyfr-test-cases \
     && cd pyfr-test-cases \
     && git checkout e741571456e0f7bfba88250d0025710364778a68 \
@@ -79,11 +104,13 @@ RUN git clone https://github.com/PyFR/PyFR-Test-Cases.git /pyfr-test-cases \
     && unxz taylor-green.msh.xz \
     && pyfr import taylor-green.msh taylor-green.pyfrm \
     && cp taylor-green.pyfrm taylor-green-2p.pyfrm \
-    && pyfr partition 2 taylor-green-2p.pyfrm . \
-    && cp taylor-green.ini taylor-green-ci.ini \
-    && sed -i -e 's/^tend = 20$/tend = 5/' -e 's/^dt-out = 1$/dt-out = 10/' taylor-green-ci.ini
+    && pyfr partition -p metis 2 taylor-green-2p.pyfrm .
 
 WORKDIR /pyfr-test-cases
+
+# Add and an ini file for 3D Taylor-Green intended for CI runs:
+# shorter simulation length and no file outputs
+COPY taylor-green-ci.ini 3d-taylor-green/taylor-green-ci.ini
 
 LABEL org.opencontainers.image.ref.name="pyfr"
 LABEL org.opencontainers.image.version="${pyfr_version}-ompi5.0.9-ofi1.22-cuda12.8.1"

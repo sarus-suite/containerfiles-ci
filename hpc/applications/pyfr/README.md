@@ -6,6 +6,7 @@ A lightweight container image based on `ghcr.io/sarus-suite/containerfiles-ci/om
 - CUDA 12.8
 - Parallel HDF5 1.14.6
 - libxsmm
+- METIS 5.2.1+ (commit dfded64f24664caa8809cacf416d378112e8867f) for mesh partitioning
 - SCOTCH 7.0.11 for mesh partitioning
 - Python 3 with h5py (MPI‐enabled) and PyFR 2.1
 
