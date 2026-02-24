@@ -103,8 +103,8 @@ RUN git clone https://github.com/PyFR/PyFR-Test-Cases.git /pyfr-test-cases \
     && cd 3d-taylor-green \
     && unxz taylor-green.msh.xz \
     && pyfr import taylor-green.msh taylor-green.pyfrm \
-    && cp taylor-green.pyfrm taylor-green-2p.pyfrm \
-    && pyfr partition -p metis 2 taylor-green-2p.pyfrm .
+    && cp taylor-green.pyfrm taylor-green-p2.pyfrm \
+    && pyfr partition -p metis 2 taylor-green-p2.pyfrm .
 
 WORKDIR /pyfr-test-cases
 
