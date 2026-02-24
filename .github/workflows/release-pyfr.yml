@@ -50,7 +50,7 @@ jobs:
             --file hpc/applications/pyfr/Containerfile \
             --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
-            .
+            hpc/applications/pyfr
 
 # Multi-arch manifest that references both images
   manifest:
