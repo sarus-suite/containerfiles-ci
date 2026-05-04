@@ -1,8 +1,4 @@
-FROM docker.io/library/debian:bookworm
-
-ARG LIBFABRIC_VERSION=1.15.1
-ARG MPI_VERSION=5.0.7
-ARG MPI_SHORT_VERSION=5.0
+FROM docker.io/library/debian:trixie
 
 RUN apt-get update \
     && apt-get install -y \
@@ -28,6 +24,7 @@ RUN apt-get update \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install libfabric
+ARG LIBFABRIC_VERSION=1.22.0
 RUN wget -q https://github.com/ofiwg/libfabric/archive/v${LIBFABRIC_VERSION}.tar.gz \
     && tar xf v${LIBFABRIC_VERSION}.tar.gz \
     && cd libfabric-${LIBFABRIC_VERSION} \
@@ -40,6 +37,8 @@ RUN wget -q https://github.com/ofiwg/libfabric/archive/v${LIBFABRIC_VERSION}.tar
     && rm -rf v${LIBFABRIC_VERSION}.tar.gz libfabric-${LIBFABRIC_VERSION}
 
 # Install OpenMPI
+ARG MPI_VERSION=5.0.10
+ARG MPI_SHORT_VERSION=5.0
 RUN wget -q https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${MPI_VERSION}.tar.gz \
     && tar xf openmpi-${MPI_VERSION}.tar.gz \
     && cd openmpi-${MPI_VERSION} \
@@ -57,11 +56,9 @@ ENV CC cc
 
 RUN git clone https://github.com/madeeks/pynamic.git \
     && cd pynamic/pynamic-pyMPI-2.6a1 \
-    && git checkout fixes \
+    && git checkout 5a0aac1cfa0023594ca8816846fafbf0cf91f835 \
     && python3 config_pynamic.py 495 1850 -e -u 215 1850 -n 100 -n 4 --with-python=python3 --with-mpi4py \
     && rm libmodule*.c libmodule*.o libutility*.c libutility*.h libutility*.o
-    
-    
-    
-#    && python3 config_pynamic.py 495 1850 -e -u 215 1850 -n 100 -n 4 --with-python=python3 --with-mpi4py
 
+LABEL org.opencontainers.image.ref.name="pynamic"
+LABEL org.opencontainers.image.version="5a0aac1-ompi5.0.10-ofi1.22"
