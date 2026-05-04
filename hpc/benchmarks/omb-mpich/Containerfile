@@ -1,6 +1,6 @@
-FROM quay.io/ethcscs/mpich:4.3.0-ofi1.15-cuda12.8
+FROM ghcr.io/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
 
-ARG omb_version=7.5
+ARG omb_version=7.5.2
 RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-${omb_version}.tar.gz \
     && tar xf osu-micro-benchmarks-${omb_version}.tar.gz \
     && cd osu-micro-benchmarks-${omb_version} \
@@ -16,3 +16,6 @@ RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchma
     && rm -rf osu-micro-benchmarks-${omb_version} osu-micro-benchmarks-${omb_version}.tar.gz
 
 WORKDIR /usr/local/libexec/osu-micro-benchmarks/mpi
+
+LABEL org.opencontainers.image.ref.name="omb"
+LABEL org.opencontainers.image.version="${omb_version}-mpich4.3.2-ofi1.22-cuda12.8.1"

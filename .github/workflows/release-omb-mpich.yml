@@ -1,10 +1,10 @@
-name: Release omb-openmpi multi-Arch
+name: Release omb-mpich multi-Arch
 
 on:
   push:
-    # only trigger when the omb-openmpi Containerfile changes
+    # only trigger when the omb-mpich Containerfile changes
     paths:
-      - 'hpc/benchmarks/omb-openmpi/Containerfile'
+      - 'hpc/benchmarks/omb-mpich/Containerfile'
 
 permissions:
   contents: write
@@ -21,10 +21,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - service: omb-openmpi
+          - service: omb-mpich
             arch: amd64
             runner: ubuntu-latest
-          - service: omb-openmpi
+          - service: omb-mpich
             arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
@@ -46,7 +46,6 @@ jobs:
 
       - name: Build & push single-arch image
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.REPO }}/${{ matrix.service }}"
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
@@ -60,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [omb-openmpi]
+        service: [omb-mpich]
 
     runs-on: ubuntu-latest
 
