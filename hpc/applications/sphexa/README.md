@@ -22,5 +22,5 @@ podman build \
 The image already packages the components needed for running SPH-EXA built-in test cases.
 For example, in a system with 4 GPUs running Slurm:
 ```
-srun --mpi=pmi2 --edf=sphexa --ntasks-per-node=4 sphexa-cuda --init evrard --glass /sphexa/50c.h5 -n 200 -s 5
+srun --mpi=pmi2 --edf=sphexa --ntasks-per-node=4 /sphexa/wrapper.sh sphexa-cuda --init evrard --glass /sphexa/50c.h5 -n 200 -s 5
 ```
