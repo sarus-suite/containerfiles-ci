@@ -1,4 +1,4 @@
-FROM jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
+FROM ghcr.io/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
 
 # Download and compile HDF5 with MPI
 ARG HDF5_VERSION=2.1.1
