@@ -1,17 +1,25 @@
-FROM ghcr.io/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
+FROM jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
 
 # Download and compile HDF5 with MPI
-ARG HDF5_VERSION=1.14.6
-RUN wget -q https://github.com/HDFGroup/hdf5/releases/download/hdf5_${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz \
-    && tar -xzf hdf5-${HDF5_VERSION}.tar.gz \
+ARG HDF5_VERSION=2.1.1
+RUN wget -q https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/hdf5.tar.gz \
+    && tar -xzf hdf5.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc ./configure --prefix=/usr --enable-parallel --enable-shared \
-    && make -j$(nproc) \
-    && make install \
+    && mkdir build && cd build \
+    && cmake -DCMAKE_BUILD_TYPE=Release \
+       -DCMAKE_C_COMPILER=mpicc \
+       -DHDF5_ENABLE_PARALLEL=ON \
+       -DBUILD_STATIC_LIBS=ON \
+       -DBUILD_SHARED_LIBS=ON \
+       -DHDF5_BUILD_FORTRAN=OFF \
+       -DBUILD_TESTING=OFF \
+       .. \
+    && cmake --build . --config Release -j \
+    && cmake --install . --prefix /usr \
     && ldconfig \
-    && cd .. && rm -rf hdf5-${HDF5_VERSION}*
+    && cd ../.. && rm -rf hdf5*
 
-ARG sphexa_version=0.95
+ARG sphexa_version=0.96.2
 RUN git clone https://github.com/sphexa-org/sphexa.git \
     && cd sphexa \
     && git checkout v${sphexa_version} \
