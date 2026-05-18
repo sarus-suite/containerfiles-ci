@@ -18,23 +18,15 @@ RUN apt-get update \
         git \
         bzip2 \
         python3 \
+        gfortran \
         rdma-core \
         numactl \
-        libconfig-dev \
-        libuv1-dev \
-        libfuse-dev \
-        libfuse3-dev \
-        libyaml-dev \
-        libnl-3-dev \
         libnuma-dev \
-        libsensors-dev \
-        libcurl4-openssl-dev \
-        libjson-c-dev \
         libibverbs-dev \
         --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ARG gdrcopy_version=2.4.4
+ARG gdrcopy_version=2.5.1
 RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/gdrcopy.git \
     && cd gdrcopy \
     && export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} \
@@ -43,7 +35,7 @@ RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/g
     && cd ../ && rm -rf gdrcopy
 
 # Install libfabric
-ARG libfabric_version=1.15.0
+ARG libfabric_version=1.22.0
 RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/libfabric.git \
     && cd libfabric \
     && ./autogen.sh \
@@ -55,14 +47,17 @@ RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/
     && rm -rf libfabric
 
 # Install UCX
-ARG UCX_VERSION=1.18.0
-RUN wget https://github.com/openucx/ucx/releases/download/v${UCX_VERSION}/ucx-${UCX_VERSION}.tar.gz \
-    && tar xzf ucx-${UCX_VERSION}.tar.gz \
-    && cd ucx-${UCX_VERSION} \
-    && mkdir build \
-    && cd build \
-    && ../configure --prefix=/usr --with-cuda=/usr/local/cuda --with-gdrcopy=/usr/local --enable-mt --enable-devel-headers \
+ARG ucx_version=1.20.0
+RUN git clone --branch v${ucx_version} --depth 1 https://github.com/openucx/ucx \
+    && cd ucx \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --with-gdrcopy=/usr/local --enable-mt --enable-devel-headers \
     && make -j$(nproc) \
     && make install \
+    && ldconfig \
     && cd ../.. \
-    && rm -rf ucx-${UCX_VERSION}.tar.gz ucx-${UCX_VERSION}
+    && rm -rf ucx
+
+ARG cuda_version
+LABEL org.opencontainers.image.ref.name="comm-fwk"
+LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}-cuda${cuda_version}"

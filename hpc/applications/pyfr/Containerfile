@@ -1,0 +1,116 @@
+FROM ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.9-ofi1.22-cuda12.8.1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y   \
+        unzip                       \
+        libopenblas-dev             \
+        liblapack-dev               \
+        python3-dev                 \
+        python3-pip                 \
+        xz-utils                    \
+        --no-install-recommends     \
+  && rm -rf /var/lib/apt/lists/*    \
+  && rm -rf /usr/lib/python3.12/EXTERNALLY-MANAGED
+
+RUN python3 -m pip install --no-cache-dir -U setuptools
+    
+# Download and compile HDF5 with MPI
+ARG HDF5_VERSION=1.14.6
+RUN wget -q https://github.com/HDFGroup/hdf5/releases/download/hdf5_${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz \
+    && tar -xzf hdf5-${HDF5_VERSION}.tar.gz \
+    && cd hdf5-${HDF5_VERSION} \
+    && CC=mpicc ./configure --prefix=/usr --enable-parallel --enable-shared \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. && rm -rf hdf5-${HDF5_VERSION}*
+
+# Build GKlib as dependency for METIS
+RUN git clone https://github.com/KarypisLab/GKlib.git \
+    && cd GKlib \
+    && git checkout e2856c2f595b153ca1ce9258c5301dbabc4f39f5 \
+    && make config shared=1 cc=gcc prefix=/usr \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf GKlib
+
+# Install METIS for mesh partitioning
+# Build METIS from source because PyFR 2.1 requires METIS>=5.2 and Ubuntu
+# official packages provide 5.1.x. Build from a specific commit because
+# tag 5.2.1 does not include a fix for dynamic linking GKlib, causing errors
+# when PyFR tries to use METIS
+RUN git clone https://github.com/KarypisLab/METIS.git \
+    && cd METIS \
+    && git checkout dfded64f24664caa8809cacf416d378112e8867f \
+    && make config shared=1 cc=gcc prefix=/usr \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf METIS
+
+# Install SCOTCH for mesh partitioning
+RUN git clone --depth 1 --branch v7.0.11 https://gitlab.inria.fr/scotch/scotch.git \
+    && cd scotch \
+    && mkdir build \
+    && cd build \
+    && cmake \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=ON \
+        -DLIBSCOTCHERR=scotcherr \
+        .. \
+    && make -j"$(nproc)" \
+    && make install \
+    && ldconfig \
+    && cd ../.. \
+    && rm -rf scotch
+
+# Install libxsmm
+RUN git clone https://github.com/libxsmm/libxsmm.git \
+    && cd libxsmm \
+    && make -j4 STATIC=0 BLAS=0 \
+    && cd ..    
+
+ENV PYFR_XSMM_LIBRARY_PATH=/libxsmm/lib/libxsmm.so
+
+# Install mpi4py and numpy with fixed versions
+RUN ldconfig /usr/local/cuda/targets/*/lib/stubs \
+    && CC=mpicc pip install --no-cache-dir \
+       mpi4py==4.1.0 numpy==2.3.1 cython pkgconfig \
+    && ldconfig
+
+# Install h5py with MPI
+RUN ldconfig /usr/local/cuda/targets/*/lib/stubs \
+    && HDF5_MPI="ON" CC=mpicc pip install --no-cache-dir --no-binary=h5py --no-build-isolation \
+       h5py==3.15.1 \
+    && ldconfig
+
+# Set base directory for pyCUDA cache
+ENV XDG_CACHE_HOME /tmp
+
+# Install PyFR
+ARG pyfr_version=2.1
+RUN pip install pyfr==${pyfr_version}
+
+# Fetch small test cases and prepare the 3D Taylor-Green vortex case,
+# creating also a mesh for 2-rank execution
+RUN git clone https://github.com/PyFR/PyFR-Test-Cases.git /pyfr-test-cases \
+    && cd pyfr-test-cases \
+    && git checkout e741571456e0f7bfba88250d0025710364778a68 \
+    && cd 3d-taylor-green \
+    && unxz taylor-green.msh.xz \
+    && pyfr import taylor-green.msh taylor-green.pyfrm \
+    && cp taylor-green.pyfrm taylor-green-p2.pyfrm \
+    && pyfr partition -p metis 2 taylor-green-p2.pyfrm .
+
+WORKDIR /pyfr-test-cases
+
+# Add and an ini file for 3D Taylor-Green intended for CI runs:
+# shorter simulation length and no file outputs
+COPY taylor-green-ci.ini 3d-taylor-green/taylor-green-ci.ini
+
+LABEL org.opencontainers.image.ref.name="pyfr"
+LABEL org.opencontainers.image.version="${pyfr_version}-ompi5.0.9-ofi1.22-cuda12.8.1"

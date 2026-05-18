@@ -4,5 +4,5 @@ This repository contains a collection of OCI‐compatible Containerfiles and sup
 
 - **Communication stacks**: CUDA-UCX-libfabric, MPICH (CH4/OFI), OpenMPI (OFI/UCX)
 - **Benchmarks**: OSU Micro-Benchmarks (OMB) for OpenMPI and MPICH, and NCCL-Tests  
-- **Applications**: PyFR, SPH-EXA, Pynamic  
+- **Applications**: PyFR, SPH-EXA, Pynamic, Megatron-LM  
 

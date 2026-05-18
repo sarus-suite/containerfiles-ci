@@ -1,15 +1,18 @@
-name: Release MPICH Multi-Arch
+name: Release of OpenMPI container multi-arch
 
 on:
   push:
-    # V1 pipeline test: Only run when the MPICH Containerfile changes
     paths:
-      - 'hpc/communication/mpich/Containerfile'
+      - 'hpc/communication/openmpi/Containerfile'
 
 permissions:
   contents: write
   packages: write
   actions: read
+
+env:
+  REGISTRY: ghcr.io
+  REPO: ghcr.io/${{ github.repository }}/ompi
 
 jobs:
   build:
@@ -33,7 +36,7 @@ jobs:
       - name: Log in to GHCR
         uses: docker/login-action@v1
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -42,11 +45,12 @@ jobs:
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
-            --file hpc/communication/mpich/Containerfile \
-            --tag ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest-${{ matrix.arch }} \
+            --file hpc/communication/openmpi/Containerfile \
+            --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
 
+# Multi-arch manifest that references both images
   manifest:
     name: Create multi-arch manifest
     needs: build
@@ -56,7 +60,7 @@ jobs:
       - name: Log in to GHCR
         uses: docker/login-action@v1
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,14 +68,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          REPO=ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich
           IMAGES=(
-            "${REPO}:latest-amd64"
-            "${REPO}:latest-arm64"
+            "${{ env.REPO }}:build-amd64"
+            "${{ env.REPO }}:build-arm64"
           )
 
           for img in "${IMAGES[@]}"; do
-            echo "Inspecting $img"
+            echo "Inspecting $img ..."
             if ! docker buildx imagetools inspect "$img" > /dev/null; then
               echo "::error file=manifest.yml::Image not found: $img"
               exit 1
@@ -80,8 +83,9 @@ jobs:
 
       - name: Create & push multi-arch manifest
         run: |
+          apt-get update && apt-get install -y --no-install-recommends skopeo jq
+          TAG=$(skopeo inspect --config docker://${{ env.REPO }}:build-amd64 | jq '.config.Labels["org.opencontainers.image.version"]' | tr -d '"')
           docker buildx imagetools create \
-            --tag ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest \
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest-amd64 \
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/mpich:latest-arm64
-
+            --tag "${{ env.REPO }}:${TAG}" \
+            "${{ env.REPO }}:build-amd64" \
+            "${{ env.REPO }}:build-arm64"

@@ -1,9 +1,9 @@
-FROM quay.io/ethcscs/comm-fwk:ofi1.15-ucx1.18-cuda12.8
+FROM ghcr.io/sarus-suite/containerfiles-ci/comm-fwk:ofi1.22.0-ucx1.20.0-cuda12.8.1
 
-ARG MPI_VER=4.3.0
-RUN wget -q https://www.mpich.org/static/downloads/${MPI_VER}/mpich-${MPI_VER}.tar.gz \
-    && tar xf mpich-${MPI_VER}.tar.gz \
-    && cd mpich-${MPI_VER} \
+ARG MPICH_VER=4.3.2
+RUN wget -q https://www.mpich.org/static/downloads/${MPICH_VER}/mpich-${MPICH_VER}.tar.gz \
+    && tar xf mpich-${MPICH_VER}.tar.gz \
+    && cd mpich-${MPICH_VER} \
     && ./autogen.sh \
     && ./configure --prefix=/usr --enable-fast=O3,ndebug \
        --disable-fortran --disable-cxx \
@@ -15,4 +15,7 @@ RUN wget -q https://www.mpich.org/static/downloads/${MPI_VER}/mpich-${MPI_VER}.t
     && make install \
     && ldconfig \
     && cd .. \
-    && rm -rf mpich-${MPI_VER}.tar.gz mpich-${MPI_VER}
+    && rm -rf mpich-${MPICH_VER}.tar.gz mpich-${MPICH_VER}
+
+LABEL org.opencontainers.image.ref.name="mpich"
+LABEL org.opencontainers.image.version="${MPICH_VER}-ofi1.22-cuda12.8.1"
