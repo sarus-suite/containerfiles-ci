@@ -1,15 +1,41 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# INPUT 1: NVIDIA base (CUDA + PyTorch prebuilt)
+# ──────────────────────────────────────────────────────────────────────────────
 FROM nvcr.io/nvidia/pytorch:24.01-py3
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
-RUN pip install --upgrade pip
-RUN pip install "transformers>=4.44.0" "tokenizers>=0.20.0" "huggingface_hub>=0.25.0" "accelerate>=1.0.0"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# INPUT 2: Curated, layered libraries (Python)
+# ──────────────────────────────────────────────────────────────────────────────
+RUN pip install --upgrade pip
+
+# Installing (pinned minimums):
+# - transformers        — HF models & pipelines
+# - tokenizers          — Fast Rust tokenizers
+# - huggingface_hub     — Hub client
+# - accelerate          — Multi-GPU / distributed utils
+RUN pip install --no-cache-dir \
+    transformers>=4.44.0 \
+    tokenizers>=0.20.0 \
+    huggingface_hub>=0.25.0 \
+    accelerate>=1.0.0
+
+# CUDA arch & build flags (bfloat16 disabled for this toolchain)
 ENV TORCH_CUDA_ARCH_LIST="9.0"
 ENV CMAKE_ARGS="-DCMAKE_CUDA_FLAGS=-DCUDA_NO_BFLOAT16"
-RUN pip install -v --no-build-isolation --no-deps git+https://github.com/rubber-duck-debug/xielu
+
+# ──────────────────────────────────────────────────────────────────────────────
+# INPUT 3: User contribution (your code / libs)
+# ──────────────────────────────────────────────────────────────────────────────
+RUN pip install -v --no-build-isolation --no-deps \
+    git+https://github.com/rubber-duck-debug/xielu
 
 COPY benchmark_infer.py .
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Caching for Hugging Face assets
+# ──────────────────────────────────────────────────────────────────────────────
 ENV HUGGINGFACE_HUB_CACHE=/opt/hf/hub
 ENV TRANSFORMERS_CACHE=/opt/hf/transformers
