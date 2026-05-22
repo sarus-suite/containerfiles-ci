@@ -1,6 +1,6 @@
 # SPH-EXA MPI/CUDA Container
 
-A minimal container image based on `ghcr.io/sarus-suite/containerfiles-ci/ompi:45.0.9-ofi1.22-cuda12.8.1` with:
+A minimal container image based on `ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.9-ofi1.22-cuda12.8.1` with:
 
 - Parallel HDF5 2.1.1 (MPI-enabled)  
 - SPH-EXA v0.96.2 with GPU-aware MPI
