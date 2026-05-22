@@ -1,4 +1,4 @@
-FROM ghcr.io/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
+FROM ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.9-ofi1.22-cuda12.8.1
 
 # Download and compile HDF5 with MPI
 ARG HDF5_VERSION=2.1.1
@@ -37,4 +37,4 @@ RUN wget -O /sphexa/50c.h5 https://zenodo.org/records/8369645/files/50c.h5?downl
     && chmod a+x /sphexa/wrapper.sh
 
 LABEL org.opencontainers.image.ref.name="sphexa"
-LABEL org.opencontainers.image.version="${sphexa_version}-mpich4.3.2-ofi1.22-cuda12.8.1"
+LABEL org.opencontainers.image.version="${sphexa_version}-ompi5.0.9-ofi1.22-cuda12.8.1"
