@@ -1,0 +1,76 @@
+ARG os_version="15.6"
+FROM docker.io/opensuse/leap:${os_version} AS base
+
+RUN zypper --non-interactive refresh && \
+    zypper --non-interactive update -y
+
+ARG os_version
+RUN \
+if [ "${os_version}" == "15.6" ] ; \
+then \
+zypper --non-interactive install -y --oldpackage libncurses6-6.1-150000.5.30.1; \
+fi
+
+RUN zypper --non-interactive install -y \
+automake \
+autogen \
+libtool \
+cmake \
+rpm-build \
+rpmlint \
+libmd-devel \
+git \
+libjson-c-devel \
+munge \
+munge-devel \
+libnuma1 \
+libnuma-devel \
+librrd8 \
+readline-devel \
+hwloc \
+hwloc-devel \
+hdf5 \
+hdf5-devel \
+lz4 \
+liblz4-devel \
+libz1 \
+zlib-devel \
+freeipmi \
+freeipmi-devel \
+dbus-1 \
+dbus-1-devel \
+make \
+gcc \
+gcc-c++ \
+curl \
+tar \
+bzip2 \
+python3 \
+vim \
+ca-certificates \
+less \
+mpich \
+mpich-devel \
+sudo \
+lua53 \
+lua53-devel \
+libmount-devel \
+clang-devel
+
+ARG slurm_version="25.05.4-1"
+COPY install_slurm.sh /
+RUN /install_slurm.sh
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH=/root/.cargo/bin:$PATH
+COPY entrypoint.sh /
+
+ARG glab_cli_version="1.99.0"
+ARG TARGETARCH
+RUN curl -sOL https://gitlab.com/gitlab-org/cli/-/releases/v${glab_cli_version}/downloads/glab_${glab_cli_version}_linux_${TARGETARCH}.rpm
+RUN zypper install --allow-unsigned-rpm -y bind-utils openssh ./glab_${glab_cli_version}_linux_${TARGETARCH}.rpm
+
+RUN date +%Y-%m-%dT%H:%M:%S >/etc/container-release.build
+CMD ["bash"]
+
+LABEL org.opencontainers.image.ref.name="build-slurm"
+LABEL org.opencontainers.image.version="${slurm_version%.*-*}-opensuse-${os_version}"
