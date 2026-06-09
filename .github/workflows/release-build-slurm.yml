@@ -49,8 +49,8 @@ jobs:
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
             --file build/slurm/opensuse/Containerfile \
-            --buildarg os_version=${{ matrix.os_version }} \
-            --buildarg slurm_version=${{ matrix.slurm_version }} \
+            --build-arg os_version=${{ matrix.os_version }} \
+            --build-arg slurm_version=${{ matrix.slurm_version }} \
             --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
