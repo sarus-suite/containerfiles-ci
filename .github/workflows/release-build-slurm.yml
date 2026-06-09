@@ -1,6 +1,7 @@
 name: Release of build-slurm opensuse container multi-arch
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'build/slurm/opensuse/Containerfile'
