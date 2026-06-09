@@ -20,8 +20,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os_version: [ 15.6 ]
-        slurm_version: [ 25.05.4-1 ] 
+        os_version: [ 15.5, 15.6 ]
+        slurm_version: [ 24.05.3-1, 25.05.4-1 ] 
         arch: [ amd64, arm64 ]
         include:
           - arch: amd64
