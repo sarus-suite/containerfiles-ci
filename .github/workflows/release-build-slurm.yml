@@ -22,6 +22,7 @@ jobs:
       matrix:
         os_version: [ 15.6 ]
         slurm_version: [ 25.05.4-1 ] 
+        arch: [ amd64, arm64 ]
         include:
           - arch: amd64
             runner: ubuntu-latest
