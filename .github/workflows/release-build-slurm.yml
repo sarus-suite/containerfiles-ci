@@ -79,12 +79,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify single-arch images exist
+        env:
+          TAG_PREFIX: "${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}"
         run: |
           set -euo pipefail
 
           IMAGES=(
-            "${{ env.REPO }}:build-amd64"
-            "${{ env.REPO }}:build-arm64"
+            "${{ env.REPO }}:${{ env.TAG_PREFIX }}-amd64"
+            "${{ env.REPO }}:${{ env.TAG_PREFIX }}-arm64"
           )
 
           for img in "${IMAGES[@]}"; do
