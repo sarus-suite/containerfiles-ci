@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os_version: [ 15.5, 15.6 ]
-        slurm_version: [ 24.05.3-1, 25.05.4-1 ] 
+        slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
         arch: [ amd64, arm64 ]
         include:
           - arch: amd64
@@ -68,7 +68,7 @@ jobs:
     strategy:
       matrix:
         os_version: [ 15.5, 15.6 ]
-        slurm_version: [ 24.05.3-1, 25.05.4-1 ] 
+        slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
 
     steps:
       - name: Log in to GHCR
