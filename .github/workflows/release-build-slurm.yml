@@ -47,6 +47,7 @@ jobs:
 
       - name: Build & push single-arch image
         run: |
+          TAG="${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}-${{ matrix.arch }}"
           CTX="build/slurm/opensuse"
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
@@ -54,15 +55,19 @@ jobs:
             --file build/slurm/opensuse/Containerfile \
             --build-arg os_version=${{ matrix.os_version }} \
             --build-arg slurm_version=${{ matrix.slurm_version }} \
-            --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
+            --tag  "${{ env.REPO }}:${{ TAG }}" \
             --push \
             "${CTX}"
 
-# Multi-arch manifest that references both images
+# Multi-arch manifest that references images for both architectures
   manifest:
     name: Create multi-arch manifest
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os_version: [ 15.5, 15.6 ]
+        slurm_version: [ 24.05.3-1, 25.05.4-1 ] 
 
     steps:
       - name: Log in to GHCR
@@ -92,9 +97,10 @@ jobs:
       - name: Create & push multi-arch manifest
         run: |
           apt-get update && apt-get install -y --no-install-recommends skopeo jq
-          TAG=$(skopeo inspect --config docker://${{ env.REPO }}:build-amd64 | jq -r '.config.Labels["org.opencontainers.image.version"]')
+          TAG_PREFIX="${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}"
+          TAG=$(skopeo inspect --config docker://${{ env.REPO }}:${{ TAG_PREFIX }}-amd64 | jq -r '.config.Labels["org.opencontainers.image.version"]')
           docker buildx imagetools create \
             --tag "${{ env.REPO }}:${TAG}" \
-            "${{ env.REPO }}:build-amd64" \
-            "${{ env.REPO }}:build-arm64"
+            "${{ env.REPO }}:${{ TAG_PREFIX }}-amd64" \
+            "${{ env.REPO }}:${{ TAG_PREFIX }}-arm64"
 
