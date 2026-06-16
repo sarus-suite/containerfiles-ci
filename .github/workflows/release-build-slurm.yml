@@ -20,10 +20,14 @@ jobs:
   build:
     strategy:
       matrix:
-        os_version: [ 15.5, 15.6 ]
+        os_name: [ opensuse, ubuntu ]
         slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
         arch: [ amd64, arm64 ]
         include:
+          - os_name: opensuse
+            os_version: [ 15.5, 15.6 ]
+          - os_name: ubuntu
+            os_version: [ 24.04, 25.10, 26.04 ]
           - arch: amd64
             runner: ubuntu-latest
           - arch: arm64
@@ -49,11 +53,11 @@ jobs:
         env:
           TAG: "${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}-${{ matrix.arch }}"
         run: |
-          CTX="build/slurm/opensuse"
+          CTX="build/slurm"
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
-            --file build/slurm/opensuse/Containerfile \
+            --file build/slurm/${{ matrix.os_name }}/Containerfile \
             --build-arg os_version=${{ matrix.os_version }} \
             --build-arg slurm_version=${{ matrix.slurm_version }} \
             --tag  "${{ env.REPO }}:${{ env.TAG }}" \

@@ -58,11 +58,11 @@ libmount-devel \
 clang-devel
 
 ARG slurm_version="25.05.4-1"
-COPY ./install_slurm.sh /
+COPY ../install_slurm.sh /
 RUN /install_slurm.sh
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH=/root/.cargo/bin:$PATH
-COPY ./entrypoint.sh /
+COPY ../entrypoint.sh /
 
 ARG glab_cli_version="1.99.0"
 ARG TARGETARCH
