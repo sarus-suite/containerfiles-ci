@@ -1,10 +1,11 @@
-name: Release of build-slurm opensuse container multi-arch
+name: Release of build-slurm container multi-arch
 
 on:
   workflow_dispatch:
   push:
     paths:
       - 'build/slurm/opensuse/Containerfile'
+      - 'build/slurm/ubuntu/Containerfile'
 
 permissions:
   contents: write
@@ -51,7 +52,7 @@ jobs:
 
       - name: Build & push single-arch image
         env:
-          TAG: "${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}-${{ matrix.arch }}"
+          TAG: "${{ matrix.slurm_version }}-${{ matrix.os_name }}-${{ matrix.os_version }}-${{ matrix.arch }}"
         run: |
           CTX="build/slurm"
           docker buildx build \
@@ -71,8 +72,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os_version: [ 15.5, 15.6 ]
+        os_name: [ opensuse, ubuntu ]
         slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
+        include:
+          - os_name: opensuse
+            os_version: [ 15.5, 15.6 ]
+          - os_name: ubuntu
+            os_version: [ 24.04, 25.10, 26.04 ]
 
     steps:
       - name: Log in to GHCR
@@ -84,7 +90,7 @@ jobs:
 
       - name: Verify single-arch images exist
         env:
-          TAG_PREFIX: "${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}"
+          TAG_PREFIX: "${{ matrix.slurm_version }}-${{ matrix.os_name }}-${{ matrix.os_version }}"
         run: |
           set -euo pipefail
 
@@ -103,7 +109,7 @@ jobs:
 
       - name: Create & push multi-arch manifest
         env:
-          TAG_PREFIX: "${{ matrix.slurm_version }}-opensuse-${{ matrix.os_version }}"
+          TAG_PREFIX: "${{ matrix.slurm_version }}-${{ matrix.os_name }}-${{ matrix.os_version }}"
         run: |
           apt-get update && apt-get install -y --no-install-recommends skopeo jq
           TAG=$(skopeo inspect --config docker://${{ env.REPO }}:${{ env.TAG_PREFIX }}-amd64 | jq -r '.config.Labels["org.opencontainers.image.version"]')
