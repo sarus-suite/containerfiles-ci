@@ -21,20 +21,10 @@ jobs:
   build:
     strategy:
       matrix:
-        os_name: [ opensuse, ubuntu ]
+        os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
         slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
         arch: [ amd64, arm64 ]
         include:
-          - os_version: 15.5
-            os_name: opensuse
-          - os_version: 15.6
-            os_name: opensuse
-          - os_version: 24.04
-            os_name: ubuntu
-          - os_version: 25.10
-            os_name: ubuntu
-          - os_version: 26.04
-            os_name: ubuntu
           - arch: amd64
             runner: ubuntu-latest
           - arch: arm64
@@ -58,14 +48,16 @@ jobs:
 
       - name: Build & push single-arch image
         env:
-          TAG: "${{ matrix.slurm_version }}-${{ matrix.os_name }}-${{ matrix.os_version }}-${{ matrix.arch }}"
+          TAG: "${{ matrix.slurm_version }}-${{ matrix.os }}-${{ matrix.arch }}"
         run: |
           CTX="build/slurm"
+          OS_NAME=$(echo "${{ matrix.os }}" | cut -d'-' -f1)
+          OS_VERSION=$(echo "${{ matrix.os }}" | cut -d'-' -f2)
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
-            --file build/slurm/${{ matrix.os_name }}/Containerfile \
-            --build-arg os_version=${{ matrix.os_version }} \
+            --file build/slurm/${OS_NAME}/Containerfile \
+            --build-arg os_version=${OS_VERSION} \
             --build-arg slurm_version=${{ matrix.slurm_version }} \
             --tag  "${{ env.REPO }}:${{ env.TAG }}" \
             --push \
@@ -78,13 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os_name: [ opensuse, ubuntu ]
+        os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
         slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
-        include:
-          - os_name: opensuse
-            os_version: [ 15.5, 15.6 ]
-          - os_name: ubuntu
-            os_version: [ 24.04, 25.10, 26.04 ]
 
     steps:
       - name: Log in to GHCR
@@ -96,7 +83,7 @@ jobs:
 
       - name: Verify single-arch images exist
         env:
-          TAG_PREFIX: "${{ matrix.slurm_version }}-${{ matrix.os_name }}-${{ matrix.os_version }}"
+          TAG_PREFIX: "${{ matrix.slurm_version }}-${{ matrix.os }}"
         run: |
           set -euo pipefail
 
@@ -115,7 +102,7 @@ jobs:
 
       - name: Create & push multi-arch manifest
         env:
-          TAG_PREFIX: "${{ matrix.slurm_version }}-${{ matrix.os_name }}-${{ matrix.os_version }}"
+          TAG_PREFIX: "${{ matrix.slurm_version }}-${{ matrix.os }}"
         run: |
           apt-get update && apt-get install -y --no-install-recommends skopeo jq
           TAG=$(skopeo inspect --config docker://${{ env.REPO }}:${{ env.TAG_PREFIX }}-amd64 | jq -r '.config.Labels["org.opencontainers.image.version"]')
