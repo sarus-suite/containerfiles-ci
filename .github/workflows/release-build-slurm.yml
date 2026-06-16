@@ -26,9 +26,15 @@ jobs:
         arch: [ amd64, arm64 ]
         include:
           - os_name: opensuse
-            os_version: [ 15.5, 15.6 ]
+            os_version: 15.5
+          - os_name: opensuse
+            os_version: 15.6
           - os_name: ubuntu
-            os_version: [ 24.04, 25.10, 26.04 ]
+            os_version: 24.04
+          - os_name: ubuntu
+            os_version: 25.10
+          - os_name: ubuntu
+            os_version: 26.04
           - arch: amd64
             runner: ubuntu-latest
           - arch: arm64
