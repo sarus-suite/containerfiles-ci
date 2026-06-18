@@ -4,9 +4,10 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - 'build/slurm/debian/Containerfile'
       - 'build/slurm/opensuse/Containerfile'
-      - 'build/slurm/ubuntu/Containerfile'
       - 'build/slurm/rockylinux/Containerfile'
+      - 'build/slurm/ubuntu/Containerfile'
 
 permissions:
   contents: write
