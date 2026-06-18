@@ -11,7 +11,7 @@ SLURM_VERSION="25.05.4-1"
 podman build \
   --build-arg os_version=${OS_VERSION} \
   --build-arg slurm_version=${SLURM_VERSION} \
-  -f ubuntu/Containerfile \
+  -f ${OS_NAME}/Containerfile \
   -t build-slurm-${OS_NAME} \
   .
 ~~~

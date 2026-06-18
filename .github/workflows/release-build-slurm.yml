@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - 'build/slurm/debian/Containerfile'
       - 'build/slurm/opensuse/Containerfile'
+      - 'build/slurm/rockylinux/Containerfile'
       - 'build/slurm/ubuntu/Containerfile'
 
 permissions:
@@ -21,7 +23,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
+        os: [ debian-12, debian-13, rockylinux-8, rockylinux-9, rockylinux-10, opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
         slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
         arch: [ amd64, arm64 ]
         include:
@@ -70,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
+        os: [ debian-12, debian-13, rockylinux-8, rockylinux-9, rockylinux-10, opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
         slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
 
     steps:
