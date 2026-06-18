@@ -21,14 +21,17 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
-        slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
-        arch: [ amd64, arm64 ]
+        #os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
+        #slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
+        #arch: [ amd64, arm64 ]
+        os: [ rockylinux-10 ]
+        slurm_version: [ 26.05.0-1 ] 
+        arch: [ amd64 ]
         include:
           - arch: amd64
             runner: ubuntu-latest
-          - arch: arm64
-            runner: ubuntu-24.04-arm
+          #- arch: arm64
+          #  runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -70,8 +73,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
-        slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
+        #os: [ opensuse-15.5, opensuse-15.6, ubuntu-24.04, ubuntu-25.10, ubuntu-26.04 ]
+        #slurm_version: [ 24.05.3-1, 24.11.7-1, 25.05.4-1, 25.11.6-1, 26.05.0-1 ] 
+        os: [ rockylinux-10 ]
+        slurm_version: [ 26.05.0-1 ] 
 
     steps:
       - name: Log in to GHCR
