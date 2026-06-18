@@ -1,0 +1,78 @@
+ARG os_version="10"
+FROM docker.io/rockylinux/rockylinux:${os_version} AS base
+
+RUN dnf update -y && \
+    dnf upgrade -y
+
+RUN dnf install -y 'dnf-command(config-manager)' && \
+    dnf config-manager --enable crb && \
+    dnf install -y epel-release
+
+RUN dnf group install -y "Development Tools" && \
+    dnf install -y \
+munge \    
+munge-devel \    
+json-c-devel \
+lua \
+lua-devel \
+readline-devel \
+dbus \
+dbus-devel \
+numactl-libs \
+numactl-devel \
+rrdtool-devel \
+hdf5 \
+hdf5-devel \
+libmd-devel \
+lz4-devel \
+rpmlint \
+automake \
+libtool \
+cmake \
+rpm-build \
+git \
+readline-devel \
+hwloc \
+hwloc-devel \
+lz4 \
+zlib-devel \
+freeipmi \
+freeipmi-devel \
+make \
+gcc \
+gcc-c++ \
+curl \
+tar \
+bzip2 \
+python3 \
+vim \
+ca-certificates \
+less \
+mpich \
+mpich-devel \
+sudo \
+libmount-devel \
+clang-devel
+
+ARG slurm_version="25.05.4-1"
+COPY ../install_slurm.sh /
+RUN /install_slurm.sh
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH=/root/.cargo/bin:$PATH
+COPY ../entrypoint.sh /
+
+ARG glab_cli_version="1.99.0"
+ARG TARGETARCH
+RUN curl -sOL https://gitlab.com/gitlab-org/cli/-/releases/v${glab_cli_version}/downloads/glab_${glab_cli_version}_linux_${TARGETARCH}.rpm
+RUN dnf install -y bind-utils openssh ./glab_${glab_cli_version}_linux_${TARGETARCH}.rpm
+
+
+RUN date +%Y-%m-%dT%H:%M:%S >/etc/container-release.build
+CMD ["bash"]
+
+RUN dnf clean all
+
+ARG slurm_version
+ARG os_version
+LABEL org.opencontainers.image.ref.name="build-slurm"
+LABEL org.opencontainers.image.version="${slurm_version%.*-*}-opensuse-${os_version}"
