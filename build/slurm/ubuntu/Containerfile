@@ -46,5 +46,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN date +%Y-%m-%dT%H:%M:%S >/etc/container-release.build
 CMD ["bash"]
 
+ARG slurm_version
+ARG os_version
 LABEL org.opencontainers.image.ref.name="build-slurm"
 LABEL org.opencontainers.image.version="${slurm_version%.*-*}-ubuntu-${os_version}"
