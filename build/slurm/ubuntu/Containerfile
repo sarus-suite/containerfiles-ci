@@ -1,0 +1,52 @@
+ARG os_version="24.04"
+FROM docker.io/ubuntu:${os_version} AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && \
+    apt upgrade -y
+
+RUN apt install -y --no-install-recommends \
+build-essential \
+gcc g++ make \
+pkg-config \
+git \
+clang llvm \
+cmake \
+python3 \
+wget \
+curl \
+gawk \
+bzip2 \
+tar \
+gzip \
+which \
+sudo \
+munge \
+libmunge-dev \
+hwloc \
+libhwloc-dev \
+libnuma-dev \
+ca-certificates
+
+ARG slurm_version="25.05.4-1"
+COPY ../install_slurm.sh /
+RUN /install_slurm.sh
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH=/root/.cargo/bin:$PATH
+COPY ../entrypoint.sh /
+
+ARG glab_cli_version="1.99.0"
+ARG TARGETARCH
+RUN curl -sOL https://gitlab.com/gitlab-org/cli/-/releases/v${glab_cli_version}/downloads/glab_${glab_cli_version}_linux_${TARGETARCH}.deb
+RUN apt install -y openssh-client bind9-utils ./glab_${glab_cli_version}_linux_${TARGETARCH}.deb
+
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN date +%Y-%m-%dT%H:%M:%S >/etc/container-release.build
+CMD ["bash"]
+
+ARG slurm_version
+ARG os_version
+LABEL org.opencontainers.image.ref.name="build-slurm"
+LABEL org.opencontainers.image.version="${slurm_version%.*-*}-ubuntu-${os_version}"
