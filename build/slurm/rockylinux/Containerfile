@@ -75,4 +75,4 @@ RUN dnf clean all
 ARG slurm_version
 ARG os_version
 LABEL org.opencontainers.image.ref.name="build-slurm"
-LABEL org.opencontainers.image.version="${slurm_version%.*-*}-opensuse-${os_version}"
+LABEL org.opencontainers.image.version="${slurm_version%.*-*}-rockylinux-${os_version}"
