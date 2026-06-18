@@ -6,6 +6,7 @@ on:
     paths:
       - 'build/slurm/opensuse/Containerfile'
       - 'build/slurm/ubuntu/Containerfile'
+      - 'build/slurm/rockylinux/Containerfile'
 
 permissions:
   contents: write
