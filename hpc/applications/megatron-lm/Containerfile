@@ -7,7 +7,7 @@ ARG megatron_core_version=0.19.2
 RUN pip install uv \
     && rm /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && uv pip install --system --no-build-isolation \
-       "megatron-core[training,dev]==${megatron_core_version}"
+       "megatron-core[training]==${megatron_core_version}"
 
 RUN git clone --branch core_v${megatron_core_version} --depth 1 https://github.com/NVIDIA/Megatron-LM.git
 
