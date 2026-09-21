@@ -1,4 +1,4 @@
-FROM ghcr.io/sarus-suite/containerfiles-ci/mpich:4.3.2-ofi1.22-cuda12.8.1
+FROM ghcr.io/sarus-suite/containerfiles-ci/mpich:5.0.1-ofi2.6.0-cuda13.4.1
 
 ARG omb_version=7.5.2
 RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-${omb_version}.tar.gz \
@@ -18,4 +18,4 @@ RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchma
 WORKDIR /usr/local/libexec/osu-micro-benchmarks/mpi
 
 LABEL org.opencontainers.image.ref.name="omb"
-LABEL org.opencontainers.image.version="${omb_version}-mpich4.3.2-ofi1.22-cuda12.8.1"
+LABEL org.opencontainers.image.version="${omb_version}-mpich5.0.1-ofi2.6.0-cuda13.4.1"
