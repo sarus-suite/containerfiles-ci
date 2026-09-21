@@ -1,5 +1,5 @@
 ARG ubuntu_version=24.04
-ARG cuda_version=12.8.1
+ARG cuda_version=13.4.1
 FROM docker.io/nvidia/cuda:${cuda_version}-cudnn-devel-ubuntu${ubuntu_version}
 
 RUN apt-get update \
@@ -26,7 +26,21 @@ RUN apt-get update \
         --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ARG gdrcopy_version=2.5.1
+# Install XPMEM
+# Use commit according to Spack package versioning rule:
+# https://github.com/spack/spack/blob/develop/var/spack/repos/spack_repo/builtin/packages/xpmem/package.py#L28
+ARG xpmem_ref=0d0bad4e1d07b38d53ecc8f20786bb1328c446da
+RUN git clone https://github.com/hpc/xpmem.git \
+    && cd xpmem \
+    && git checkout ${xpmem_ref} \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-default-prefix=/usr --disable-kernel-module \
+    && make -j$(nproc) \
+    && make install \
+    && cd .. \
+    && rm -r xpmem
+
+ARG gdrcopy_version=2.6
 RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/gdrcopy.git \
     && cd gdrcopy \
     && export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} \
@@ -35,11 +49,11 @@ RUN git clone --depth 1 --branch v${gdrcopy_version} https://github.com/NVIDIA/g
     && cd ../ && rm -rf gdrcopy
 
 # Install libfabric
-ARG libfabric_version=1.22.0
+ARG libfabric_version=2.6.0
 RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/libfabric.git \
     && cd libfabric \
     && ./autogen.sh \
-    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-efa \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-xpmem=/usr --enable-efa \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
@@ -47,7 +61,7 @@ RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/
     && rm -rf libfabric
 
 # Install UCX
-ARG ucx_version=1.20.0
+ARG ucx_version=1.22.0
 RUN git clone --branch v${ucx_version} --depth 1 https://github.com/openucx/ucx \
     && cd ucx \
     && ./autogen.sh \
