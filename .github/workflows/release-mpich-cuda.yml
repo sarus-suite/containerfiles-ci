@@ -1,9 +1,9 @@
-name: Release of OpenMPI container multi-arch
+name: Release MPICH CUDA multi-Arch
 
 on:
   push:
     paths:
-      - 'hpc/communication/openmpi/Containerfile'
+      - 'hpc/communication/mpich/cuda/Containerfile'
 
 permissions:
   contents: write
@@ -12,7 +12,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  REPO: ghcr.io/${{ github.repository }}/ompi
+  REPO: ghcr.io/${{ github.repository }}/mpich
+
 
 jobs:
   build:
@@ -45,7 +46,7 @@ jobs:
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
-            --file hpc/communication/openmpi/Containerfile \
+            --file hpc/communication/mpich/cuda/Containerfile \
             --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
