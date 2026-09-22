@@ -1,4 +1,4 @@
-FROM ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.9-ofi1.22-cuda12.8.1
+FROM ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.11-ofi2.6.0-cuda13.4.1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y   \
@@ -113,4 +113,4 @@ WORKDIR /pyfr-test-cases
 COPY taylor-green-ci.ini 3d-taylor-green/taylor-green-ci.ini
 
 LABEL org.opencontainers.image.ref.name="pyfr"
-LABEL org.opencontainers.image.version="${pyfr_version}-ompi5.0.9-ofi1.22-cuda12.8.1"
+LABEL org.opencontainers.image.version="${pyfr_version}-ompi5.0.11-ofi2.6.0-cuda13.4.1"
