@@ -19,13 +19,12 @@ RUN wget -q https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/h
     && ldconfig \
     && cd ../.. && rm -rf hdf5*
 
-ARG sphexa_version=0.96.2
+ARG sphexa_ref=341b90be2b38af180300581d21bb65ac4b2b71ce
 RUN git clone https://github.com/sphexa-org/sphexa.git \
     && cd sphexa \
-    && git checkout v${sphexa_version} \
+    && git checkout ${sphexa_ref} \
     && CC=mpicc CXX=mpicxx cmake \
        -DCMAKE_INSTALL_PREFIX=/usr \
-       -DCMAKE_CXX_FLAGS="-I/usr/local/cuda/include/cccl" \
        -DCSTONE_WITH_GPU_AWARE_MPI=ON \
        . \
     && make -j$(nproc) \
@@ -41,4 +40,4 @@ RUN wget -O /sphexa/50c.h5 https://zenodo.org/records/8369645/files/50c.h5?downl
     && chmod a+x /sphexa/wrapper.sh
 
 LABEL org.opencontainers.image.ref.name="sphexa"
-LABEL org.opencontainers.image.version="${sphexa_version}-ompi5.0.11-ofi2.6.0-cuda13.4.1"
+LABEL org.opencontainers.image.version="341b90b-ompi5.0.11-ofi2.6.0-cuda13.4.1"
