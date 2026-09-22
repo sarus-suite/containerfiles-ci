@@ -1,0 +1,68 @@
+ARG ubuntu_version=24.04
+FROM docker.io/library/ubuntu:${ubuntu_version}
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+       apt-get install -y \
+        build-essential \
+        ca-certificates \
+        pkg-config \
+        automake \
+        autoconf \
+        libtool \
+        cmake \
+        gdb \
+        strace \
+        wget \
+        git \
+        bzip2 \
+        python3 \
+        gfortran \
+        rdma-core \
+        numactl \
+        libnuma-dev \
+        libibverbs-dev \
+        --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install XPMEM
+# Use commit according to Spack package versioning rule:
+# https://github.com/spack/spack/blob/develop/var/spack/repos/spack_repo/builtin/packages/xpmem/package.py#L28
+ARG xpmem_ref=0d0bad4e1d07b38d53ecc8f20786bb1328c446da
+RUN git clone https://github.com/hpc/xpmem.git \
+    && cd xpmem \
+    && git checkout ${xpmem_ref} \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-default-prefix=/usr --disable-kernel-module \
+    && make -j$(nproc) \
+    && make install \
+    && cd .. \
+    && rm -r xpmem
+
+# Install libfabric
+ARG libfabric_version=2.6.0
+RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/libfabric.git \
+    && cd libfabric \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --enable-xpmem=/usr --enable-efa \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf libfabric
+
+# Install UCX
+ARG UCX_VERSION=1.22.0
+RUN wget https://github.com/openucx/ucx/releases/download/v${UCX_VERSION}/ucx-${UCX_VERSION}.tar.gz \
+    && tar xzf ucx-${UCX_VERSION}.tar.gz \
+    && cd ucx-${UCX_VERSION} \
+    && mkdir build \
+    && cd build \
+    && ../configure --prefix=/usr --enable-mt --enable-devel-headers \
+    && make -j$(nproc) \
+    && make install \
+    && cd ../.. \
+    && rm -rf ucx-${UCX_VERSION}.tar.gz ucx-${UCX_VERSION}
+
+LABEL org.opencontainers.image.ref.name="comm-fwk"
+LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}"
