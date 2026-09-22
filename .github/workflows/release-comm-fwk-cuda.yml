@@ -1,9 +1,9 @@
-name: Release of comm-fwk container multi-arch
+name: Release of comm-fwk CUDA container multi-arch
 
 on:
   push:
     paths:
-      - 'hpc/communication/comm-fwk/Containerfile'
+      - 'hpc/communication/comm-fwk/cuda/Containerfile'
 
 permissions:
   contents: write
@@ -46,7 +46,7 @@ jobs:
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
-            --file hpc/communication/comm-fwk/Containerfile \
+            --file hpc/communication/comm-fwk/cuda/Containerfile \
             --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
