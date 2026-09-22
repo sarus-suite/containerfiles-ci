@@ -8,7 +8,6 @@ RUN wget -q https://www.mpich.org/static/downloads/${MPICH_VER}/mpich-${MPICH_VE
     && ./configure --prefix=/usr --enable-fast=O3,ndebug \
        --disable-cxx --with-xpmem=/usr \
        --with-device=ch4:ofi --with-libfabric=/usr \
-       --with-cuda=/usr/local/cuda \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
