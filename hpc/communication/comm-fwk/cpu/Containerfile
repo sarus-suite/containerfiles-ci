@@ -52,17 +52,17 @@ RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/
     && rm -rf libfabric
 
 # Install UCX
-ARG UCX_VERSION=1.22.0
-RUN wget https://github.com/openucx/ucx/releases/download/v${UCX_VERSION}/ucx-${UCX_VERSION}.tar.gz \
-    && tar xzf ucx-${UCX_VERSION}.tar.gz \
-    && cd ucx-${UCX_VERSION} \
+ARG ucx_version=1.22.0
+RUN wget https://github.com/openucx/ucx/releases/download/v${ucx_version}/ucx-${ucx_version}.tar.gz \
+    && tar xzf ucx-${ucx_version}.tar.gz \
+    && cd ucx-${ucx_version} \
     && mkdir build \
     && cd build \
     && ../configure --prefix=/usr --enable-mt --enable-devel-headers \
     && make -j$(nproc) \
     && make install \
     && cd ../.. \
-    && rm -rf ucx-${UCX_VERSION}.tar.gz ucx-${UCX_VERSION}
+    && rm -rf ucx-${ucx_version}.tar.gz ucx-${ucx_version}
 
 LABEL org.opencontainers.image.ref.name="comm-fwk"
 LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}"
