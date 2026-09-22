@@ -66,3 +66,4 @@ RUN wget https://github.com/openucx/ucx/releases/download/v${UCX_VERSION}/ucx-${
 
 LABEL org.opencontainers.image.ref.name="comm-fwk"
 LABEL org.opencontainers.image.version="ofi${libfabric_version}-ucx${ucx_version}"
+
