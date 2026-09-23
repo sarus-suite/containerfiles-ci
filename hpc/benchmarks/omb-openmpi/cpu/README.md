@@ -3,7 +3,7 @@
 A minimal container image based on `ghcr.io/sarus-suite/containerfiles-ci/ompi:5.0.11-ofi2.6.0` with:
 
 - OpenMPI 5.0.11 + libfabric 2.6.0
-- OSU Micro-Benchmarks v7.5.2 (MPI + CUDA enabled)
+- OSU Micro-Benchmarks v7.5.2
 
 ## Building 
 ~~~
