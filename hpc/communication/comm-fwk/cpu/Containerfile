@@ -40,7 +40,7 @@ RUN git clone https://github.com/hpc/xpmem.git \
     && rm -r xpmem
 
 # Install libfabric
-ARG libfabric_version=2.6.0
+ARG libfabric_version=2.3.1
 RUN git clone --branch v${libfabric_version} --depth 1 https://github.com/ofiwg/libfabric.git \
     && cd libfabric \
     && ./autogen.sh \
