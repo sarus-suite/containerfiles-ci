@@ -1,4 +1,4 @@
-FROM ghcr.io/sarus-suite/containerfiles-ci/comm-fwk:ofi2.6.0-ucx1.22.0
+FROM ghcr.io/sarus-suite/containerfiles-ci/comm-fwk:ofi2.3.1-ucx1.22.0
 
 ARG OMPI_VER=5.0.11
 RUN wget -q https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_VER}.tar.gz \
@@ -12,4 +12,4 @@ RUN wget -q https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_V
     && rm -rf openmpi-${OMPI_VER}.tar.gz openmpi-${OMPI_VER}
 
 LABEL org.opencontainers.image.ref.name="ompi"
-LABEL org.opencontainers.image.version="${OMPI_VER}-ofi2.6.0"
+LABEL org.opencontainers.image.version="${OMPI_VER}-ofi2.3.1"
