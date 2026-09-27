@@ -1,10 +1,9 @@
-name: Release omb-openmpi multi-Arch
+name: Release of comm-fwk CUDA container multi-arch
 
 on:
   push:
-    # only trigger when the omb-openmpi Containerfile changes
     paths:
-      - 'hpc/benchmarks/omb-openmpi/Containerfile'
+      - 'hpc/communication/comm-fwk/cuda/Containerfile'
 
 permissions:
   contents: write
@@ -13,19 +12,17 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  REPO: ghcr.io/${{ github.repository }}/omb
+  REPO: ghcr.io/${{ github.repository }}/comm-fwk
+
 
 jobs:
   build:
     strategy:
-      fail-fast: false
       matrix:
         include:
-          - service: omb-openmpi
-            arch: amd64
+          - arch: amd64
             runner: ubuntu-latest
-          - service: omb-openmpi
-            arch: arm64
+          - arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
 
@@ -49,18 +46,15 @@ jobs:
           docker buildx build \
             --builder "${{ steps.buildx.outputs.name }}" \
             --platform linux/${{ matrix.arch }} \
-            --file hpc/benchmarks/${{ matrix.service }}/Containerfile \
-            --tag   "${{ env.REPO }}:build-${{ matrix.service }}-${{ matrix.arch }}" \
+            --file hpc/communication/comm-fwk/cuda/Containerfile \
+            --tag  "${{ env.REPO }}:build-${{ matrix.arch }}" \
             --push \
             .
 
+# Multi-arch manifest that references both images
   manifest:
+    name: Create multi-arch manifest
     needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        service: [omb-openmpi]
-
     runs-on: ubuntu-latest
 
     steps:
@@ -76,8 +70,8 @@ jobs:
           set -euo pipefail
 
           IMAGES=(
-            "${{ env.REPO }}:build-${{ matrix.service }}-amd64"
-            "${{ env.REPO }}:build-${{ matrix.service }}-arm64"
+            "${{ env.REPO }}:build-amd64"
+            "${{ env.REPO }}:build-arm64"
           )
 
           for img in "${IMAGES[@]}"; do
@@ -91,8 +85,9 @@ jobs:
       - name: Create & push multi-arch manifest
         run: |
           apt-get update && apt-get install -y --no-install-recommends skopeo jq
-          TAG=$(skopeo inspect --config docker://${{ env.REPO }}:build-${{ matrix.service }}-amd64 | jq '.config.Labels["org.opencontainers.image.version"]' | tr -d '"')
+          TAG=$(skopeo inspect --config docker://${{ env.REPO }}:build-amd64 | jq '.config.Labels["org.opencontainers.image.version"]' | tr -d '"')
           docker buildx imagetools create \
             --tag "${{ env.REPO }}:${TAG}" \
-            "${{ env.REPO }}:build-${{ matrix.service }}-amd64" \
-            "${{ env.REPO }}:build-${{ matrix.service }}-arm64"
+            "${{ env.REPO }}:build-amd64" \
+            "${{ env.REPO }}:build-arm64"
+
